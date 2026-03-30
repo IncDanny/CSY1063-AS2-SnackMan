@@ -99,5 +99,13 @@ function move() {
 
 move();
 
-document.addEventListener('keydown', keyDown);
-document.addEventListener('keyup', keyUp);
+let start = document.querySelector('.start');
+
+function startGame() {
+    start.style.display = 'none'
+    document.addEventListener('keydown', keyDown);
+    document.addEventListener('keyup', keyUp);
+}
+
+start.addEventListener('click', startGame);
+
