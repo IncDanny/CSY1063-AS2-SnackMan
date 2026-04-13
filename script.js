@@ -3,6 +3,11 @@ let downPressed = false;
 let leftPressed = false;
 let rightPressed = false;
 
+const leftScreenButton = document.querySelector('#lbttn');
+const upScreenButton = document.querySelector('#ubttn');
+const rightScreenButton = document.querySelector('#rbttn');
+const downScreenButton = document.querySelector('#dbttn');
+
 const main = document.querySelector('main');
 let speed = 1 // Change players speed
 
@@ -59,14 +64,53 @@ function keyUp(event) {
 
 function keyDown(event) {
     if (event.key === 'ArrowUp') {
+        stopMovingUsingScreenButtons();
         upPressed = true;
     } else if (event.key === 'ArrowDown') {
+        stopMovingUsingScreenButtons();
         downPressed = true;
     } else if (event.key === 'ArrowLeft') {
+        stopMovingUsingScreenButtons();
         leftPressed = true;
     } else if (event.key === 'ArrowRight') {
+        stopMovingUsingScreenButtons();
         rightPressed = true;
     }
+}
+
+function leftScreenButtonClicked() {
+    leftPressed = true;
+    upPressed = false;
+    downPressed = false;
+    rightPressed = false;
+}
+
+function upScreenButtonClicked() {
+    upPressed = true;
+    downPressed = false;
+    leftPressed = false;
+    rightPressed = false;
+}
+
+function rightScreenButtonClicked() {
+    rightPressed = true;
+    upPressed = false;
+    downPressed = false;
+    leftPressed = false;
+}
+
+function downScreenButtonClicked() {
+    downPressed = true;
+    upPressed = false;
+    leftPressed = false;
+    rightPressed = false;
+}
+
+function stopMovingUsingScreenButtons() {
+    upPressed = false;
+    downPressed = false;
+    leftPressed = false;
+    rightPressed = false;
 }
 
 const player = document.querySelector('#player');
@@ -99,12 +143,20 @@ function move() {
 
 move();
 
-let start = document.querySelector('.start');
+function listenForUserInputs() {
+    document.addEventListener('keydown', keyDown);
+    document.addEventListener('keyup', keyUp);
+    leftScreenButton.addEventListener('click', leftScreenButtonClicked);
+    upScreenButton.addEventListener('click', upScreenButtonClicked);
+    rightScreenButton.addEventListener('click', rightScreenButtonClicked);
+    downScreenButton.addEventListener('click', downScreenButtonClicked);
+}
+
+const start = document.querySelector('.start');
 
 function startGame() {
     start.style.display = 'none'
-    document.addEventListener('keydown', keyDown);
-    document.addEventListener('keyup', keyUp);
+    listenForUserInputs();
 }
 
 start.addEventListener('click', startGame);
