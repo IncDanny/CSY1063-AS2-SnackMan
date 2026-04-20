@@ -118,25 +118,55 @@ let playerTop = 0;
 let playerLeft = 0;
 
 function move() {
+    const playerPosition = player.getBoundingClientRect();
+    
     if (downPressed == true) {
-        playerTop += speed;
-        player.style.top = playerTop + 'px';
-        player.classList = 'down';
+        let newBottom = playerPosition.bottom + 1;
+
+        let bl = document.elementFromPoint(playerPosition.left, newBottom);
+        let br = document.elementFromPoint(playerPosition.right, newBottom);
+
+        if (bl.classList.contains('wall') == false && br.classList.contains('wall') == false) {
+            playerTop += speed;
+            player.style.top = playerTop + 'px';
+            player.classList = 'down';
+        }
     }
     else if (upPressed == true) {
-        playerTop -= speed;
-        player.style.top = playerTop + 'px';
-        player.classList = 'up';
+        let newTop = playerPosition.top - 1;
+
+        let tl = document.elementFromPoint(playerPosition.left, newTop);
+        let tr = document.elementFromPoint(playerPosition.right, newTop);
+
+        if (tl.classList.contains('wall') == false && tr.classList.contains('wall') == false) {
+            playerTop -= speed;
+            player.style.top = playerTop + 'px';
+            player.classList = 'up';
+        }
     }
     else if (leftPressed == true) {
-        playerLeft -= speed;
-        player.style.left = playerLeft + 'px';
-        player.classList = 'left';
+        let newLeft = playerPosition.left - 1;
+
+        let lt = document.elementFromPoint(newLeft, playerPosition.top);
+        let lb = document.elementFromPoint(newLeft, playerPosition.bottom);
+
+        if (lt.classList.contains('wall') == false && lb.classList.contains('wall') == false) {
+            playerLeft -= speed;
+            player.style.left = playerLeft + 'px';
+            player.classList = 'left';
+        }
     }
     else if (rightPressed == true) {
-        playerLeft += speed;
-        player.style.left = playerLeft + 'px';
-        player.classList = 'right';
+        let newRight = playerPosition.right + 1;
+
+        let rt = document.elementFromPoint(newRight, playerPosition.top);
+        let rb = document.elementFromPoint(newRight, playerPosition.bottom);
+
+        if (rt.classList.contains('wall') == false && rb.classList.contains('wall') == false) {
+            playerLeft += speed;
+            player.style.left = playerLeft + 'px';
+            player.classList = 'right';
+        }
     }
     requestAnimationFrame(move);
 }
