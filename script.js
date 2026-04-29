@@ -56,28 +56,28 @@ mazeGenerator();
 
 // Player movement
 function keyUp(event) {
-    if (event.key === 'ArrowUp') {
+    if (event.key === 'ArrowUp' || event.key === 'w') {
         upPressed = false;
-    } else if (event.key === 'ArrowDown') {
+    } else if (event.key === 'ArrowDown' || event.key === 's') {
         downPressed = false;
-    } else if (event.key === 'ArrowLeft') {
+    } else if (event.key === 'ArrowLeft' || event.key === 'a') {
         leftPressed = false;
-    } else if (event.key === 'ArrowRight') {
+    } else if (event.key === 'ArrowRight' || event.key === 'd') {
         rightPressed = false;
     }
 }
 
 function keyDown(event) {
-    if (event.key === 'ArrowUp') {
+    if (event.key === 'ArrowUp' || event.key === 'w') {
         releaseMovement();
         upPressed = true;
-    } else if (event.key === 'ArrowDown') {
+    } else if (event.key === 'ArrowDown' || event.key === 's') {
         releaseMovement();
         downPressed = true;
-    } else if (event.key === 'ArrowLeft') {
+    } else if (event.key === 'ArrowLeft' || event.key === 'a') {
         releaseMovement();
         leftPressed = true;
-    } else if (event.key === 'ArrowRight') {
+    } else if (event.key === 'ArrowRight' || event.key === 'd') {
         releaseMovement();
         rightPressed = true;
     }
@@ -288,7 +288,7 @@ function endGame() {
     releaseMovement();
     stopListeningForUserInputs();
     start.style.display = 'flex';
-    startText.innerHTML = 'Reset?';
+    startText.innerHTML = 'Restart Game?';
     start.addEventListener('click', resetGame);
     cancelAnimationFrame(movementInterval);
 }
