@@ -118,7 +118,7 @@ function releaseMovement() {
     rightPressed = false;
 }
 
-let score = document.querySelector('#score');
+let score = document.querySelector('.score').firstElementChild.nextElementSibling;
 score.innerHTML = 0;
 let startText = document.querySelector('#startText');
 
@@ -130,8 +130,22 @@ let playerPosition = player.getBoundingClientRect();
 
 let movementInterval;
 
+const livesDisplay = document.querySelector('.lives').firstElementChild.nextElementSibling;
+let lives = 3;
+addLives();
 
-let lives;
+function addLives() {
+    for (let i = 0; i < lives; i++) {
+        let liveToBeAdded = document.createElement('li');
+        livesDisplay.appendChild(liveToBeAdded);
+    }
+}
+
+function removeLive() {
+    let liveToBeRemoved = livesDisplay.firstElementChild;
+    livesDisplay.removeChild(liveToBeRemoved);
+    return;
+}
 
 function playerCollidesWithEnemy() {
     releaseMovement();
@@ -140,11 +154,13 @@ function playerCollidesWithEnemy() {
 
     if (lives > 1) {
         lives -= 1;
+        removeLive();
         player.classList = 'hit';
         setTimeout(move, 1500);
     }
     
     else {
+        removeLive();
         player.classList = 'dead';
         setTimeout(endGame, 1500);
     }
@@ -245,7 +261,7 @@ function move() {
     }
 
     if (points.length == 0) {
-        endGame();
+        nextLevel();
         return;
     }
 
@@ -274,6 +290,15 @@ function stopListeningForUserInputs() {
 
 const start = document.querySelector('.start');
 
+function nextLevel() {
+    main.innerHTML = '';
+    mazeGenerator();
+    player = document.querySelector('#player');
+    playerTop = 0;
+    playerLeft = 0;
+    startGame();
+}
+
 function resetGame() {
     main.innerHTML = '';
     mazeGenerator();
@@ -281,6 +306,8 @@ function resetGame() {
     score.innerHTML = 0;
     playerTop = 0;
     playerLeft = 0;
+    lives = 3;
+    addLives();
     startGame();
 }
 
@@ -296,7 +323,6 @@ function endGame() {
 function startGame() {
     start.removeEventListener('click', startGame);
     start.style.display = 'none'
-    lives = 3;
     move();
 }
 
