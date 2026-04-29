@@ -20,6 +20,7 @@ body {
     grid-template-areas: 
         "header header header"
         "leaderboard main score"
+        "leaderboard main level"
         "leaderboard main controls";
     align-items: center;
     justify-items: center;
@@ -48,12 +49,13 @@ main {
 .lives li {list-style: none; background-color: yellow; width: 2em; height: 2em; border-radius: 100%; margin: 5px;}
 .lives ul { display: flex;}
 .score { grid-area: score;}
+.level { grid-area: level;}
 
 .leaderboard { grid-area: leaderboard;}
 .leaderboard ol { margin-left: 2.5em; margin-top: 1em; text-align: left;}
 .leaderboard ol li { font-size: 0.85em; padding: 1em 0;}
-.leaderboard, .score, .controls, header { text-align: center;}
-.leaderboard, .score { height: 100%;}
+.leaderboard, .score, .level,  .controls, header { text-align: center;}
+.leaderboard, .score, .level { height: 100%;}
 
 div h1 {font-size: 1.25em; text-decoration: underline;}
 

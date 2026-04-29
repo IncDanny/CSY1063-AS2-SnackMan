@@ -26,6 +26,22 @@ function mazeGenerator() {
         ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*']
     ];
 
+    /* let maze = [
+        ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*'],
+        ['*', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '*'],
+        ['*', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '*'],
+        ['*', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '*'],
+        ['*', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '*'],
+        ['*', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '*'],
+        ['*', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '*'],
+        ['*', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '*'],
+        ['*', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '*'],
+        ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*']
+    ]; */
+
+
+
+
     // Populates the maze
     maze.forEach((y) => {
         y.forEach((x) => {
@@ -120,7 +136,9 @@ function releaseMovement() {
 
 let score = document.querySelector('.score').firstElementChild.nextElementSibling;
 score.innerHTML = 0;
-let startText = document.querySelector('#startText');
+
+let level = document.querySelector('.level').firstElementChild.nextElementSibling;
+level.innerHTML = 1;
 
 let player = document.querySelector('#player');
 let playerTop = 0;
@@ -291,18 +309,24 @@ function stopListeningForUserInputs() {
 const start = document.querySelector('.start');
 
 function nextLevel() {
+    releaseMovement();
+    stopListeningForUserInputs();
+    start.style.display = 'flex';
+    document.querySelector('.start').firstElementChild.nextElementSibling.innerHTML = 'Next Level!';
+    level.innerHTML ++;
     main.innerHTML = '';
     mazeGenerator();
     player = document.querySelector('#player');
     playerTop = 0;
     playerLeft = 0;
-    startGame();
+    setTimeout(startGame, 2000);
 }
 
 function resetGame() {
     main.innerHTML = '';
     mazeGenerator();
     player = document.querySelector('#player');
+    level.innerHTML = 1;
     score.innerHTML = 0;
     playerTop = 0;
     playerLeft = 0;
@@ -315,7 +339,7 @@ function endGame() {
     releaseMovement();
     stopListeningForUserInputs();
     start.style.display = 'flex';
-    startText.innerHTML = 'Restart Game?';
+    document.querySelector('.start').firstElementChild.nextElementSibling.innerHTML = 'Restart Game?';
     start.addEventListener('click', resetGame);
     cancelAnimationFrame(movementInterval);
 }
