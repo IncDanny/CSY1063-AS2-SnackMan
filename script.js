@@ -10,6 +10,7 @@ const downScreenButton = document.querySelector('#dbttn');
 
 const main = document.querySelector('main');
 let speed = 1 // Change players speed
+let enemySpeed = 0.5; // Change enemies speed
 
 function mazeGenerator() {
     // Player = 'P', Wall = '*', Enemy = 'E', Point = ' '
@@ -148,6 +149,96 @@ let playerPosition = player.getBoundingClientRect();
 
 let movementInterval;
 
+let enemies = document.querySelectorAll('.enemy');
+
+let isColliding = false;
+
+function moveEnemies(enemy) {
+    let ghostTop = 0;
+    let ghostLeft = 0;
+    let movementDirection = Math.floor(Math.random() * 4);
+
+    function animate() {
+        let enemyPosition = enemy.getBoundingClientRect();
+
+        if (movementDirection == 0) {
+            let newRight = enemyPosition.right + 1;
+            let rt = document.elementFromPoint(newRight, enemyPosition.top);
+            let rb = document.elementFromPoint(newRight, enemyPosition.bottom);
+
+            if ((rt && rt.id == 'player') || (rb && rb.id == 'player')) {
+                playerCollidesWithEnemy();
+                movementDirection = Math.floor(Math.random() * 4);
+            }
+            else if ((rt && !rt.classList.contains('wall')) && (rb && !rb.classList.contains('wall'))) {
+                ghostLeft += enemySpeed;
+                enemy.style.left = ghostLeft + 'px';
+            }
+            else {
+                movementDirection = Math.floor(Math.random() * 4);
+            }
+        }
+        else if (movementDirection == 1) {
+            let newLeft = enemyPosition.left - 1;
+            let lt = document.elementFromPoint(newLeft, enemyPosition.top);
+            let lb = document.elementFromPoint(newLeft, enemyPosition.bottom);
+
+            if ((lt && lt.id == 'player') || (lb && lb.id == 'player')) {
+                playerCollidesWithEnemy();
+                movementDirection = Math.floor(Math.random() * 4);
+            }
+            else if ((lt && !lt.classList.contains('wall')) && (lb && !lb.classList.contains('wall'))) {
+                ghostLeft -= enemySpeed;
+                enemy.style.left = ghostLeft + 'px';
+            }
+            else {
+                movementDirection = Math.floor(Math.random() * 4);
+            }
+        }
+        else if (movementDirection == 2) {
+            let newTop = enemyPosition.top - 1;
+            let tl = document.elementFromPoint(enemyPosition.left, newTop);
+            let tr = document.elementFromPoint(enemyPosition.right, newTop);
+
+            if ((tl && tl.id == 'player') || (tr && tr.id == 'player')) {
+                playerCollidesWithEnemy();
+                movementDirection = Math.floor(Math.random() * 4);
+            }
+            else if ((tl && !tl.classList.contains('wall')) && (tr && !tr.classList.contains('wall'))) {
+                ghostTop -= enemySpeed;
+                enemy.style.top = ghostTop + 'px';
+            }
+            else {
+                movementDirection = Math.floor(Math.random() * 4);
+            }
+        }
+        else if (movementDirection == 3) {
+            let newBottom = enemyPosition.bottom + 1;
+            let bl = document.elementFromPoint(enemyPosition.left, newBottom);
+            let br = document.elementFromPoint(enemyPosition.right, newBottom);
+
+            if ((bl && bl.id == 'player') || (br && br.id == 'player')) {
+                playerCollidesWithEnemy();
+                movementDirection = Math.floor(Math.random() * 4);
+            }
+            else if ((bl && !bl.classList.contains('wall')) && (br && !br.classList.contains('wall'))) {
+                ghostTop += enemySpeed;
+                enemy.style.top = ghostTop + 'px';
+            }
+            else {
+                movementDirection = Math.floor(Math.random() * 4);
+            }
+        }
+
+        EnemyMovementInterval = requestAnimationFrame(animate);
+        enemy.animationId = EnemyMovementInterval;
+    }
+
+    animate();
+}
+
+
+
 const livesDisplay = document.querySelector('.lives').firstElementChild.nextElementSibling;
 let lives = 3;
 addLives();
@@ -161,11 +252,15 @@ function addLives() {
 
 function removeLive() {
     let liveToBeRemoved = livesDisplay.firstElementChild;
-    livesDisplay.removeChild(liveToBeRemoved);
-    return;
+    if (liveToBeRemoved) {
+        livesDisplay.removeChild(liveToBeRemoved);
+    }
 }
 
 function playerCollidesWithEnemy() {
+    if (isColliding) return;
+    isColliding = true;
+    
     releaseMovement();
     stopListeningForUserInputs();
     cancelAnimationFrame(movementInterval);
@@ -174,9 +269,12 @@ function playerCollidesWithEnemy() {
         lives -= 1;
         removeLive();
         player.classList = 'hit';
-        setTimeout(move, 1500);
+        setTimeout(function() {
+            isColliding = false;
+            move();
+        }, 1500);
     }
-    
+
     else {
         removeLive();
         player.classList = 'dead';
@@ -188,24 +286,25 @@ function move() {
     listenForUserInputs();
     playerPosition = player.getBoundingClientRect();
 
+
     if (downPressed == true) {
         let newBottom = playerPosition.bottom + 1;
 
         let bl = document.elementFromPoint(playerPosition.left, newBottom);
         let br = document.elementFromPoint(playerPosition.right, newBottom);
 
-        if (bl.classList.contains('enemy') == true || br.classList.contains('enemy') == true) {
+        if ((bl && bl.classList.contains('enemy') == true) || (br && br.classList.contains('enemy') == true)) {
             playerCollidesWithEnemy();
             return;
         }
 
-        else if (bl.classList.contains('wall') == false && br.classList.contains('wall') == false) {
+        else if ((bl && !bl.classList.contains('wall')) && (br && !br.classList.contains('wall'))) {
             playerTop += speed;
             player.style.top = playerTop + 'px';
             player.classList = 'down';
         }
 
-        
+
     }
     else if (upPressed == true) {
         let newTop = playerPosition.top - 1;
@@ -213,12 +312,12 @@ function move() {
         let tl = document.elementFromPoint(playerPosition.left, newTop);
         let tr = document.elementFromPoint(playerPosition.right, newTop);
 
-        if (tl.classList.contains('enemy') == true || tr.classList.contains('enemy') == true) {
+        if ((tl && tl.classList.contains('enemy') == true) || (tr && tr.classList.contains('enemy') == true)) {
             playerCollidesWithEnemy();
             return;
         }
 
-        else if (tl.classList.contains('wall') == false && tr.classList.contains('wall') == false) {
+        else if ((tl && !tl.classList.contains('wall')) && (tr && !tr.classList.contains('wall'))) {
             playerTop -= speed;
             player.style.top = playerTop + 'px';
             player.classList = 'up';
@@ -231,12 +330,12 @@ function move() {
         let lt = document.elementFromPoint(newLeft, playerPosition.top);
         let lb = document.elementFromPoint(newLeft, playerPosition.bottom);
 
-        if (lt.classList.contains('enemy') == true || lb.classList.contains('enemy') == true) {
+        if ((lt && lt.classList.contains('enemy') == true) || (lb && lb.classList.contains('enemy') == true)) {
             playerCollidesWithEnemy();
             return;
         }
 
-        else if (lt.classList.contains('wall') == false && lb.classList.contains('wall') == false) {
+        else if ((lt && !lt.classList.contains('wall')) && (lb && !lb.classList.contains('wall'))) {
             playerLeft -= speed;
             player.style.left = playerLeft + 'px';
             player.classList = 'left';
@@ -254,7 +353,7 @@ function move() {
             return;
         }
 
-        else if (rt.classList.contains('wall') == false && rb.classList.contains('wall') == false) {
+        else if ((rt && !rt.classList.contains('wall')) && (rb && !rb.classList.contains('wall'))) {
             playerLeft += speed;
             player.style.left = playerLeft + 'px';
             player.classList = 'right';
@@ -287,7 +386,6 @@ function move() {
 }
 
 
-
 function listenForUserInputs() {
     document.addEventListener('keydown', keyDown);
     document.addEventListener('keyup', keyUp);
@@ -313,9 +411,10 @@ function nextLevel() {
     stopListeningForUserInputs();
     start.style.display = 'flex';
     document.querySelector('.start').firstElementChild.nextElementSibling.innerHTML = 'Next Level!';
-    level.innerHTML ++;
+    level.innerHTML++;
     main.innerHTML = '';
     mazeGenerator();
+    enemies = document.querySelectorAll('.enemy');
     player = document.querySelector('#player');
     playerTop = 0;
     playerLeft = 0;
@@ -325,6 +424,7 @@ function nextLevel() {
 function resetGame() {
     main.innerHTML = '';
     mazeGenerator();
+    enemies = document.querySelectorAll('.enemy');
     player = document.querySelector('#player');
     level.innerHTML = 1;
     score.innerHTML = 0;
@@ -342,12 +442,20 @@ function endGame() {
     document.querySelector('.start').firstElementChild.nextElementSibling.innerHTML = 'Restart Game?';
     start.addEventListener('click', resetGame);
     cancelAnimationFrame(movementInterval);
+    for (const enemy of enemies) {
+        cancelAnimationFrame(enemy.animationId);
+    }
+    
 }
 
 function startGame() {
     start.removeEventListener('click', startGame);
-    start.style.display = 'none'
+    start.style.display = 'none';
+    isColliding = false;
     move();
+    for (const enemy of enemies) {
+        moveEnemies(enemy);
+    }
 }
 
 start.addEventListener('click', startGame);
