@@ -9,8 +9,9 @@ const rightScreenButton = document.querySelector('#rbttn');
 const downScreenButton = document.querySelector('#dbttn');
 
 const main = document.querySelector('main');
-let speed = 1 // Change players speed
+let playerSpeed = 1 // Change players speed
 let enemySpeed = 0.5; // Change enemies speed
+
 
 function mazeGenerator() {
     // Player = 'P', Wall = '*', Enemy = 'E', Point = ' '
@@ -149,94 +150,190 @@ let playerPosition = player.getBoundingClientRect();
 
 let movementInterval;
 
+
 let enemies = document.querySelectorAll('.enemy');
 
 let isColliding = false;
 
-function moveEnemies(enemy) {
-    let ghostTop = 0;
-    let ghostLeft = 0;
-    let movementDirection = Math.floor(Math.random() * 4);
-
-    function animate() {
-        let enemyPosition = enemy.getBoundingClientRect();
-
-        if (movementDirection == 0) {
-            let newRight = enemyPosition.right + 1;
-            let rt = document.elementFromPoint(newRight, enemyPosition.top);
-            let rb = document.elementFromPoint(newRight, enemyPosition.bottom);
-
-            if ((rt && rt.id == 'player') || (rb && rb.id == 'player')) {
-                playerCollidesWithEnemy();
-                movementDirection = Math.floor(Math.random() * 4);
-            }
-            else if ((rt && !rt.classList.contains('wall')) && (rb && !rb.classList.contains('wall'))) {
-                ghostLeft += enemySpeed;
-                enemy.style.left = ghostLeft + 'px';
-            }
-            else {
-                movementDirection = Math.floor(Math.random() * 4);
-            }
-        }
-        else if (movementDirection == 1) {
-            let newLeft = enemyPosition.left - 1;
-            let lt = document.elementFromPoint(newLeft, enemyPosition.top);
-            let lb = document.elementFromPoint(newLeft, enemyPosition.bottom);
-
-            if ((lt && lt.id == 'player') || (lb && lb.id == 'player')) {
-                playerCollidesWithEnemy();
-                movementDirection = Math.floor(Math.random() * 4);
-            }
-            else if ((lt && !lt.classList.contains('wall')) && (lb && !lb.classList.contains('wall'))) {
-                ghostLeft -= enemySpeed;
-                enemy.style.left = ghostLeft + 'px';
-            }
-            else {
-                movementDirection = Math.floor(Math.random() * 4);
-            }
-        }
-        else if (movementDirection == 2) {
-            let newTop = enemyPosition.top - 1;
-            let tl = document.elementFromPoint(enemyPosition.left, newTop);
-            let tr = document.elementFromPoint(enemyPosition.right, newTop);
-
-            if ((tl && tl.id == 'player') || (tr && tr.id == 'player')) {
-                playerCollidesWithEnemy();
-                movementDirection = Math.floor(Math.random() * 4);
-            }
-            else if ((tl && !tl.classList.contains('wall')) && (tr && !tr.classList.contains('wall'))) {
-                ghostTop -= enemySpeed;
-                enemy.style.top = ghostTop + 'px';
-            }
-            else {
-                movementDirection = Math.floor(Math.random() * 4);
-            }
-        }
-        else if (movementDirection == 3) {
-            let newBottom = enemyPosition.bottom + 1;
-            let bl = document.elementFromPoint(enemyPosition.left, newBottom);
-            let br = document.elementFromPoint(enemyPosition.right, newBottom);
-
-            if ((bl && bl.id == 'player') || (br && br.id == 'player')) {
-                playerCollidesWithEnemy();
-                movementDirection = Math.floor(Math.random() * 4);
-            }
-            else if ((bl && !bl.classList.contains('wall')) && (br && !br.classList.contains('wall'))) {
-                ghostTop += enemySpeed;
-                enemy.style.top = ghostTop + 'px';
-            }
-            else {
-                movementDirection = Math.floor(Math.random() * 4);
-            }
-        }
-
-        EnemyMovementInterval = requestAnimationFrame(animate);
-        enemy.animationId = EnemyMovementInterval;
-    }
-
-    animate();
+let characters = [];
+characters[0] = player;
+for (const enemy of enemies) {
+    characters.push(enemy);
 }
 
+function getCharacters() {
+    player = document.querySelector('#player');
+    enemies = document.querySelectorAll('.enemy');
+    characters = [];
+    characters[0] = player;
+    for (const enemy of enemies) {
+        characters.push(enemy);
+    }
+}
+
+function getSemiRandomDirection(direction) {
+    let oldDirection = direction;
+    movementDirection = Math.floor(Math.random() * 4);
+    if (movementDirection == oldDirection) {
+        return getSemiRandomDirection(oldDirection);
+    }
+    else {
+        return movementDirection;
+    }
+}
+
+function animateCharacters(character) {
+
+
+    let speed = enemySpeed;
+
+    let characterPosition = character.getBoundingClientRect();
+
+    let characterTop = 0;
+    let characterLeft = 0;
+    let movementDirection = Math.floor(Math.random() * 4);
+
+    let iAmUser = false;
+
+    if (character.id == 'player') {
+        listenForUserInputs();
+        iAmUser = true;
+        speed = playerSpeed;
+    };
+
+    function animate() {
+        characterPosition = character.getBoundingClientRect();
+
+        if ((iAmUser && rightPressed) || (!iAmUser && movementDirection == 0)) {
+            let newRight = characterPosition.right + 1;
+            let rt = document.elementFromPoint(newRight, characterPosition.top);
+            let rb = document.elementFromPoint(newRight, characterPosition.bottom);
+
+            if ((!iAmUser && rt && rt.id == 'player') || (!iAmUser && rb && rb.id == 'player') || (iAmUser && rt && rt.classList.contains('enemy')) || (iAmUser && rb && rb.classList.contains('enemy'))) {
+                playerCollidesWithEnemy();
+                movementDirection = getSemiRandomDirection(movementDirection);
+            }
+
+            else if (!iAmUser && rt && rt.classList.contains('enemy') || (!iAmUser && rb && rb.classList.contains('enemy'))) {
+                movementDirection = getSemiRandomDirection(movementDirection);
+            }
+
+            else if ((rt && !rt.classList.contains('wall')) && (rb && !rb.classList.contains('wall'))) {
+                characterLeft += speed;
+                character.style.left = characterLeft + 'px';
+                if (iAmUser) {
+                    character.classList = 'right';
+                }
+            }
+            else {
+                movementDirection = Math.floor(Math.random() * 4);
+            }
+        }
+        else if ((iAmUser && leftPressed) || (!iAmUser && movementDirection == 1)) {
+            let newLeft = characterPosition.left - 1;
+            let lt = document.elementFromPoint(newLeft, characterPosition.top);
+            let lb = document.elementFromPoint(newLeft, characterPosition.bottom);
+
+            if ((!iAmUser && lt && lt.id == 'player') || (!iAmUser && lb && lb.id == 'player') || (iAmUser && lt && lt.classList.contains('enemy')) || (iAmUser && lb && lb.classList.contains('enemy'))) {
+                playerCollidesWithEnemy();
+                movementDirection = getSemiRandomDirection(movementDirection);
+            }
+
+            else if (!iAmUser && lt && lt.classList.contains('enemy') || (!iAmUser && lb && lb.classList.contains('enemy'))) {
+                movementDirection = getSemiRandomDirection(movementDirection);
+            }
+
+            else if ((lt && !lt.classList.contains('wall')) && (lb && !lb.classList.contains('wall'))) {
+                characterLeft -= speed;
+                character.style.left = characterLeft + 'px';
+                if (iAmUser) {
+                    character.classList = 'left';
+                }
+            }
+            else {
+                movementDirection = Math.floor(Math.random() * 4);
+            }
+        }
+        else if ((iAmUser && upPressed) || (!iAmUser && movementDirection == 2)) {
+            let newTop = characterPosition.top - 1;
+            let tl = document.elementFromPoint(characterPosition.left, newTop);
+            let tr = document.elementFromPoint(characterPosition.right, newTop);
+
+            if ((!iAmUser && tl && tl.id == 'player') || (!iAmUser && tr && tr.id == 'player') || (iAmUser && tl && tl.classList.contains('enemy')) || (iAmUser && tr && tr.classList.contains('enemy'))) {
+                playerCollidesWithEnemy();
+                movementDirection = getSemiRandomDirection(movementDirection);
+            }
+
+            else if (!iAmUser && tl && tl.classList.contains('enemy') || (!iAmUser && tr && tr.classList.contains('enemy'))) {
+                movementDirection = getSemiRandomDirection(movementDirection);
+            }
+
+            else if ((tl && !tl.classList.contains('wall')) && (tr && !tr.classList.contains('wall'))) {
+                characterTop -= speed;
+                character.style.top = characterTop + 'px';
+                if (iAmUser) {
+                    character.classList = 'up';
+                }
+            }
+            else {
+                movementDirection = Math.floor(Math.random() * 4);
+            }
+        }
+        else if ((iAmUser && downPressed) || (!iAmUser && movementDirection == 3)) {
+            let newBottom = characterPosition.bottom + 1;
+            let bl = document.elementFromPoint(characterPosition.left, newBottom);
+            let br = document.elementFromPoint(characterPosition.right, newBottom);
+
+            if ((!iAmUser && bl && bl.id == 'player') || (!iAmUser && br && br.id == 'player') || (iAmUser && bl && bl.classList.contains('enemy')) || (iAmUser && br && br.classList.contains('enemy'))) {
+                playerCollidesWithEnemy();
+                movementDirection = getSemiRandomDirection(movementDirection);
+            }
+
+            else if (!iAmUser && bl && bl.classList.contains('enemy') || (!iAmUser && br && br.classList.contains('enemy'))) {
+                movementDirection = getSemiRandomDirection(movementDirection);
+            }
+
+            else if ((bl && !bl.classList.contains('wall')) && (br && !br.classList.contains('wall'))) {
+                characterTop += speed;
+                character.style.top = characterTop + 'px';
+                if (iAmUser) {
+                    character.classList = 'down';
+                }
+            }
+            else {
+                movementDirection = Math.floor(Math.random() * 4);
+            }
+        
+        
+        }
+
+        if (iAmUser) {
+            let points = document.querySelectorAll('.point');
+            for (const point of points) {
+                let pointPosition = point.getBoundingClientRect();
+                if (characterPosition.left < pointPosition.right &&
+                    characterPosition.right > pointPosition.left &&
+                    characterPosition.top < pointPosition.bottom &&
+                    characterPosition.bottom > pointPosition.top) {
+                    point.classList.remove('point');
+                    score.innerHTML = parseInt(score.innerHTML) + 1;
+                }
+            }
+
+            if (points.length == 0) {
+                nextLevel();
+                return;
+            }
+        }
+
+
+        movementInterval = requestAnimationFrame(animate);
+        character.animationId = movementInterval;
+
+    
+    }
+    animate();
+}
 
 
 const livesDisplay = document.querySelector('.lives').firstElementChild.nextElementSibling;
@@ -258,21 +355,17 @@ function removeLive() {
 }
 
 function playerCollidesWithEnemy() {
-    if (isColliding) return;
-    isColliding = true;
     
     releaseMovement();
     stopListeningForUserInputs();
-    cancelAnimationFrame(movementInterval);
+    
 
     if (lives > 1) {
         lives -= 1;
         removeLive();
         player.classList = 'hit';
-        setTimeout(function() {
-            isColliding = false;
-            move();
-        }, 1500);
+        setTimeout(listenForUserInputs, 1500);
+        return;
     }
 
     else {
@@ -280,109 +373,8 @@ function playerCollidesWithEnemy() {
         player.classList = 'dead';
         setTimeout(endGame, 1500);
     }
-}
 
-function move() {
-    listenForUserInputs();
-    playerPosition = player.getBoundingClientRect();
-
-
-    if (downPressed == true) {
-        let newBottom = playerPosition.bottom + 1;
-
-        let bl = document.elementFromPoint(playerPosition.left, newBottom);
-        let br = document.elementFromPoint(playerPosition.right, newBottom);
-
-        if ((bl && bl.classList.contains('enemy') == true) || (br && br.classList.contains('enemy') == true)) {
-            playerCollidesWithEnemy();
-            return;
-        }
-
-        else if ((bl && !bl.classList.contains('wall')) && (br && !br.classList.contains('wall'))) {
-            playerTop += speed;
-            player.style.top = playerTop + 'px';
-            player.classList = 'down';
-        }
-
-
-    }
-    else if (upPressed == true) {
-        let newTop = playerPosition.top - 1;
-
-        let tl = document.elementFromPoint(playerPosition.left, newTop);
-        let tr = document.elementFromPoint(playerPosition.right, newTop);
-
-        if ((tl && tl.classList.contains('enemy') == true) || (tr && tr.classList.contains('enemy') == true)) {
-            playerCollidesWithEnemy();
-            return;
-        }
-
-        else if ((tl && !tl.classList.contains('wall')) && (tr && !tr.classList.contains('wall'))) {
-            playerTop -= speed;
-            player.style.top = playerTop + 'px';
-            player.classList = 'up';
-        }
-
-    }
-    else if (leftPressed == true) {
-        let newLeft = playerPosition.left - 1;
-
-        let lt = document.elementFromPoint(newLeft, playerPosition.top);
-        let lb = document.elementFromPoint(newLeft, playerPosition.bottom);
-
-        if ((lt && lt.classList.contains('enemy') == true) || (lb && lb.classList.contains('enemy') == true)) {
-            playerCollidesWithEnemy();
-            return;
-        }
-
-        else if ((lt && !lt.classList.contains('wall')) && (lb && !lb.classList.contains('wall'))) {
-            playerLeft -= speed;
-            player.style.left = playerLeft + 'px';
-            player.classList = 'left';
-        }
-
-    }
-    else if (rightPressed == true) {
-        let newRight = playerPosition.right + 1;
-
-        let rt = document.elementFromPoint(newRight, playerPosition.top);
-        let rb = document.elementFromPoint(newRight, playerPosition.bottom);
-
-        if (rt.classList.contains('enemy') == true || rb.classList.contains('enemy') == true) {
-            playerCollidesWithEnemy();
-            return;
-        }
-
-        else if ((rt && !rt.classList.contains('wall')) && (rb && !rb.classList.contains('wall'))) {
-            playerLeft += speed;
-            player.style.left = playerLeft + 'px';
-            player.classList = 'right';
-        }
-
-
-    }
-
-    let points = document.querySelectorAll('.point');
-    for (const point of points) {
-        pointPosition = point.getBoundingClientRect();
-
-        if (playerPosition.left < pointPosition.right &&
-            playerPosition.right > pointPosition.left &&
-            playerPosition.top < pointPosition.bottom &&
-            playerPosition.bottom > pointPosition.top) {
-            point.classList.remove('point');
-            score.innerHTML = parseInt(score.innerHTML) + 1;
-        }
-
-
-    }
-
-    if (points.length == 0) {
-        nextLevel();
-        return;
-    }
-
-    movementInterval = requestAnimationFrame(move);
+    return;
 }
 
 
@@ -409,27 +401,24 @@ const start = document.querySelector('.start');
 function nextLevel() {
     releaseMovement();
     stopListeningForUserInputs();
+    for (const character of characters) {
+        cancelAnimationFrame(character.animationId);
+    }
     start.style.display = 'flex';
     document.querySelector('.start').firstElementChild.nextElementSibling.innerHTML = 'Next Level!';
     level.innerHTML++;
     main.innerHTML = '';
     mazeGenerator();
-    enemies = document.querySelectorAll('.enemy');
-    player = document.querySelector('#player');
-    playerTop = 0;
-    playerLeft = 0;
+    getCharacters();
     setTimeout(startGame, 2000);
 }
 
 function resetGame() {
     main.innerHTML = '';
     mazeGenerator();
-    enemies = document.querySelectorAll('.enemy');
-    player = document.querySelector('#player');
+    getCharacters();
     level.innerHTML = 1;
     score.innerHTML = 0;
-    playerTop = 0;
-    playerLeft = 0;
     lives = 3;
     addLives();
     startGame();
@@ -441,20 +430,16 @@ function endGame() {
     start.style.display = 'flex';
     document.querySelector('.start').firstElementChild.nextElementSibling.innerHTML = 'Restart Game?';
     start.addEventListener('click', resetGame);
-    cancelAnimationFrame(movementInterval);
-    for (const enemy of enemies) {
-        cancelAnimationFrame(enemy.animationId);
+    for (const character of characters) {
+        cancelAnimationFrame(character.animationId);
     }
-    
 }
 
 function startGame() {
     start.removeEventListener('click', startGame);
     start.style.display = 'none';
-    isColliding = false;
-    move();
-    for (const enemy of enemies) {
-        moveEnemies(enemy);
+   for (const character of characters) {
+        animateCharacters(character);
     }
 }
 
