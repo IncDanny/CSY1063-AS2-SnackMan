@@ -10,12 +10,16 @@ const downScreenButton = document.querySelector('#dbttn');
 
 const main = document.querySelector('main');
 let playerSpeed = 1 // Change players speed
-let enemySpeed = 0.5; // Change enemies speed
+let enemySpeed = 0.3; // Change enemies speed
+let numberOfEnemies = 1; // Change number of enemies
 
+function chancheToGetHarderLevel() {
+    
+}
 
 function mazeGenerator() {
     // Player = 'P', Wall = '*', Enemy = 'E', Point = ' '
-    let maze = [
+    /* let maze = [
         ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*'],
         ['*', 'P', ' ', '*', ' ', ' ', ' ', ' ', 'E', '*'],
         ['*', ' ', ' ', ' ', ' ', ' ', ' ', '*', '*', '*'],
@@ -26,20 +30,45 @@ function mazeGenerator() {
         ['*', ' ', ' ', ' ', ' ', ' ', ' ', '*', ' ', '*'],
         ['*', 'E', '*', ' ', ' ', ' ', ' ', ' ', ' ', '*'],
         ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*']
+    ]; */
+
+    
+
+
+    let maze = [
+        ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*'],
+        ['*', 'P', '.', '*', '.', '.', '.', '.', '.', '*'],
+        ['*', '.', '.', '.', '.', '.', '.', '*', '*', '*'],
+        ['*', '.', '.', '.', '.', '.', '.', '.', '.', '*'],
+        ['*', '.', '*', '*', '.', '.', '.', '.', '.', '*'],
+        ['*', '.', '.', '.', '.', '.', '.', '*', '*', '*'],
+        ['*', '.', '.', '*', '.', '.', '.', '.', '.', '*'],
+        ['*', '.', '.', '.', '.', '.', '.', '*', '.', '*'],
+        ['*', '.', '*', '.', '.', '.', '.', '.', '.', '*'],
+        ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*']
     ];
 
-    /* let maze = [
-        ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*'],
-        ['*', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '*'],
-        ['*', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '*'],
-        ['*', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '*'],
-        ['*', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '*'],
-        ['*', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '*'],
-        ['*', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '*'],
-        ['*', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '*'],
-        ['*', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '*'],
-        ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*']
-    ]; */
+    
+
+    let column;
+    let row;
+
+
+    function findACellForEnemy() {
+        column = Math.ceil(Math.random() * 8);
+        row = Math.ceil(Math.random() * 8);
+    }
+
+
+    for (let i = 0; i < numberOfEnemies; i++) {
+
+    findACellForEnemy();
+
+    while (maze[row][column] !== '.') {
+        findACellForEnemy();
+    }
+    maze[row][column] = 'E';
+}
 
 
 
@@ -303,8 +332,8 @@ function animateCharacters(character) {
             else {
                 movementDirection = Math.floor(Math.random() * 4);
             }
-        
-        
+
+
         }
 
         if (iAmUser) {
@@ -330,7 +359,7 @@ function animateCharacters(character) {
         movementInterval = requestAnimationFrame(animate);
         character.animationId = movementInterval;
 
-    
+
     }
     animate();
 }
@@ -355,10 +384,10 @@ function removeLive() {
 }
 
 function playerCollidesWithEnemy() {
-    
+
     releaseMovement();
     stopListeningForUserInputs();
-    
+
 
     if (lives > 1) {
         lives -= 1;
@@ -438,7 +467,7 @@ function endGame() {
 function startGame() {
     start.removeEventListener('click', startGame);
     start.style.display = 'none';
-   for (const character of characters) {
+    for (const character of characters) {
         animateCharacters(character);
     }
 }
