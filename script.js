@@ -12,9 +12,48 @@ const main = document.querySelector('main');
 let playerSpeed = 1 // Change players speed
 let enemySpeed = 0.3; // Change enemies speed
 let numberOfEnemies = 1; // Change number of enemies
+let probabilityOfMoreEnemies = 2; // Change the probability of more enemies appearing
+let probabilityOfFasterEnemies = 5; // Change the probability of enemies getting faster
 
-function chancheToGetHarderLevel() {
-    
+function chanceToGetHarderLevel() {
+    let doIgetMoreEnemies = Math.floor(Math.random() * probabilityOfMoreEnemies);
+    let doIgetFasterEnemies = Math.floor(Math.random() * probabilityOfFasterEnemies);
+
+
+    switch (numberOfEnemies) {
+        case 1:
+            switch (doIgetMoreEnemies) {
+                case 0:
+                    numberOfEnemies++;
+                    probabilityOfMoreEnemies += 5;
+                    break;
+            }
+            break;
+        case 2:
+            switch (doIgetMoreEnemies) {
+                case 0:
+                    numberOfEnemies++;
+                    probabilityOfMoreEnemies += 5;
+                    break;
+            }
+            break;
+        case 3:
+            switch (doIgetMoreEnemies) {
+                case 0:
+                    numberOfEnemies++;
+                    break;
+            }
+            break;
+        case numberOfEnemies > 3:
+            probabilityOfFasterEnemies = 2;
+            break;
+    }
+
+    switch (doIgetFasterEnemies) {
+        case 0:
+            enemySpeed += 0.2;
+            break;
+    }
 }
 
 function mazeGenerator() {
@@ -32,7 +71,7 @@ function mazeGenerator() {
         ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*']
     ]; */
 
-    
+
 
 
     let maze = [
@@ -48,7 +87,7 @@ function mazeGenerator() {
         ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*']
     ];
 
-    
+
 
     let column;
     let row;
@@ -62,13 +101,13 @@ function mazeGenerator() {
 
     for (let i = 0; i < numberOfEnemies; i++) {
 
-    findACellForEnemy();
-
-    while (maze[row][column] !== '.') {
         findACellForEnemy();
+
+        while (maze[row][column] !== '.') {
+            findACellForEnemy();
+        }
+        maze[row][column] = 'E';
     }
-    maze[row][column] = 'E';
-}
 
 
 
@@ -172,17 +211,11 @@ let level = document.querySelector('.level').firstElementChild.nextElementSiblin
 level.innerHTML = 1;
 
 let player = document.querySelector('#player');
-let playerTop = 0;
-let playerLeft = 0;
-
 let playerPosition = player.getBoundingClientRect();
-
-let movementInterval;
 
 
 let enemies = document.querySelectorAll('.enemy');
 
-let isColliding = false;
 
 let characters = [];
 characters[0] = player;
@@ -357,7 +390,6 @@ function animateCharacters(character) {
 
 
         movementInterval = requestAnimationFrame(animate);
-        character.animationId = movementInterval;
 
 
     }
@@ -379,6 +411,7 @@ function addLives() {
 function removeLive() {
     let liveToBeRemoved = livesDisplay.firstElementChild;
     if (liveToBeRemoved) {
+        lives -= 1;
         livesDisplay.removeChild(liveToBeRemoved);
     }
 }
@@ -390,7 +423,6 @@ function playerCollidesWithEnemy() {
 
 
     if (lives > 1) {
-        lives -= 1;
         removeLive();
         player.classList = 'hit';
         setTimeout(listenForUserInputs, 1500);
@@ -431,12 +463,13 @@ function nextLevel() {
     releaseMovement();
     stopListeningForUserInputs();
     for (const character of characters) {
-        cancelAnimationFrame(character.animationId);
+        cancelAnimationFrame(movementInterval);
     }
     start.style.display = 'flex';
     document.querySelector('.start').firstElementChild.nextElementSibling.innerHTML = 'Next Level!';
     level.innerHTML++;
     main.innerHTML = '';
+    chanceToGetHarderLevel();
     mazeGenerator();
     getCharacters();
     setTimeout(startGame, 2000);
@@ -460,7 +493,7 @@ function endGame() {
     document.querySelector('.start').firstElementChild.nextElementSibling.innerHTML = 'Restart Game?';
     start.addEventListener('click', resetGame);
     for (const character of characters) {
-        cancelAnimationFrame(character.animationId);
+        cancelAnimationFrame(movementInterval);
     }
 }
 
