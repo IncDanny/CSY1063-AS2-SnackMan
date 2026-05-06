@@ -179,28 +179,28 @@ mazeGenerator();
 
 // Player movement
 function keyUp(event) {
-    if (event.key === 'ArrowUp' || event.key === 'w') {
+    if (event.key === 'ArrowUp' || event.key === 'w' || event.key === 'W') {
         upPressed = false;
-    } else if (event.key === 'ArrowDown' || event.key === 's') {
+    } else if (event.key === 'ArrowDown' || event.key === 's' || event.key === 'S') {
         downPressed = false;
-    } else if (event.key === 'ArrowLeft' || event.key === 'a') {
+    } else if (event.key === 'ArrowLeft' || event.key === 'a' || event.key === 'A') {
         leftPressed = false;
-    } else if (event.key === 'ArrowRight' || event.key === 'd') {
+    } else if (event.key === 'ArrowRight' || event.key === 'd' || event.key === 'D') {
         rightPressed = false;
     }
 }
 
 function keyDown(event) {
-    if (event.key === 'ArrowUp' || event.key === 'w') {
+    if (event.key === 'ArrowUp' || event.key === 'w' || event.key === 'W') {
         releaseMovement();
         upPressed = true;
-    } else if (event.key === 'ArrowDown' || event.key === 's') {
+    } else if (event.key === 'ArrowDown' || event.key === 's' || event.key === 'S') {
         releaseMovement();
         downPressed = true;
-    } else if (event.key === 'ArrowLeft' || event.key === 'a') {
+    } else if (event.key === 'ArrowLeft' || event.key === 'a' || event.key === 'A') {
         releaseMovement();
         leftPressed = true;
-    } else if (event.key === 'ArrowRight' || event.key === 'd') {
+    } else if (event.key === 'ArrowRight' || event.key === 'd' || event.key === 'D') {
         releaseMovement();
         rightPressed = true;
     }
@@ -243,22 +243,13 @@ function releaseMovement() {
 
 let score = document.querySelector('.score').firstElementChild.nextElementSibling;
 score.innerHTML = 0;
-
 let level = document.querySelector('.level').firstElementChild.nextElementSibling;
 level.innerHTML = 1;
 
-let player = document.querySelector('#player');
-let playerPosition = player.getBoundingClientRect();
-
-
-let enemies = document.querySelectorAll('.enemy');
-
-
-let characters = [];
-characters[0] = player;
-for (const enemy of enemies) {
-    characters.push(enemy);
-}
+let player;
+let enemies;
+let playerGoneWild = false;
+let playerTemporarilyImmune = false;
 
 function getCharacters() {
     player = document.querySelector('#player');
@@ -269,6 +260,8 @@ function getCharacters() {
         characters.push(enemy);
     }
 }
+
+getCharacters();
 
 function getSemiRandomDirection(direction) {
     let oldDirection = direction;
@@ -282,7 +275,7 @@ function getSemiRandomDirection(direction) {
 }
 
 
-let playerGoneWild = false;
+
 
 function animateCharacters(character) {
 
@@ -328,7 +321,7 @@ function animateCharacters(character) {
                 score.innerHTML = parseInt(score.innerHTML) + 5;
             }
 
-            else if (!iAmUser && rt && rt.classList.contains('enemy') || (!iAmUser && rb && rb.classList.contains('enemy')) || (!iAmUser && rt && rt.id == 'player' && playerGoneWild) || (!iAmUser && rb && rb.id == 'player' && playerGoneWild)) {
+            else if (!iAmUser && rt && rt.classList.contains('enemy') || (!iAmUser && rb && rb.classList.contains('enemy')) || (!iAmUser && rt && rt.id == 'player' && playerGoneWild) || (!iAmUser && rb && rb.id == 'player' && playerGoneWild) || (!iAmUser && rt && rt.id == 'player' && playerTemporarilyImmune) || (!iAmUser && rb && rb.id == 'player' && playerTemporarilyImmune)) {
                 movementDirection = getSemiRandomDirection(movementDirection);
             }
 
@@ -360,7 +353,7 @@ function animateCharacters(character) {
                 score.innerHTML = parseInt(score.innerHTML) + 5;
             }
 
-            else if (!iAmUser && lt && lt.classList.contains('enemy') || (!iAmUser && lb && lb.classList.contains('enemy')) || (!iAmUser && lt && lt.id == 'player' && playerGoneWild) || (!iAmUser && lb && lb.id == 'player' && playerGoneWild)) {
+            else if ((!iAmUser && lt && lt.classList.contains('enemy')) || (!iAmUser && lb && lb.classList.contains('enemy')) || (!iAmUser && lt && lt.id == 'player' && playerGoneWild) || (!iAmUser && lb && lb.id == 'player' && playerGoneWild) || (!iAmUser && lt && lt.id == 'player' && playerTemporarilyImmune) || (!iAmUser && lb && lb.id == 'player' && playerTemporarilyImmune)) {
                 movementDirection = getSemiRandomDirection(movementDirection);
             }
 
@@ -391,7 +384,7 @@ function animateCharacters(character) {
                 score.innerHTML = parseInt(score.innerHTML) + 5;
             }
 
-            else if (!iAmUser && tl && tl.classList.contains('enemy') || (!iAmUser && tr && tr.classList.contains('enemy')) || (!iAmUser && tl && tl.id == 'player' && playerGoneWild) || (!iAmUser && tr && tr.id == 'player' && playerGoneWild)) {
+            else if ((!iAmUser && tl && tl.classList.contains('enemy')) || (!iAmUser && tr && tr.classList.contains('enemy')) || (!iAmUser && tl && tl.id == 'player' && playerGoneWild) || (!iAmUser && tr && tr.id == 'player' && playerGoneWild) || (!iAmUser && tl && tl.id == 'player' && playerTemporarilyImmune) || (!iAmUser && tr && tr.id == 'player' && playerTemporarilyImmune)) {
                 movementDirection = getSemiRandomDirection(movementDirection);
             }
 
@@ -422,7 +415,7 @@ function animateCharacters(character) {
                 score.innerHTML = parseInt(score.innerHTML) + 5;
             }
 
-            else if (!iAmUser && bl && bl.classList.contains('enemy') || (!iAmUser && br && br.classList.contains('enemy')) || (!iAmUser && bl && bl.id == 'player' && playerGoneWild) || (!iAmUser && br && br.id == 'player' && playerGoneWild)) {
+            else if ((!iAmUser && bl && bl.classList.contains('enemy')) || (!iAmUser && br && br.classList.contains('enemy')) || (!iAmUser && bl && bl.id == 'player' && playerGoneWild) || (!iAmUser && br && br.id == 'player' && playerGoneWild) || (!iAmUser && bl && bl.id == 'player' && playerTemporarilyImmune) || (!iAmUser && br && br.id == 'player' && playerTemporarilyImmune)) {
                 movementDirection = getSemiRandomDirection(movementDirection);
             }
 
@@ -539,7 +532,9 @@ function playerCollidesWithEnemy() {
     if (lives > 1) {
         removeLive();
         player.classList = 'hit';
+        playerTemporarilyImmune = true;
         setTimeout(listenForUserInputs, 1500);
+        setTimeout(function () {playerTemporarilyImmune = false;}, 1500);
         return;
     }
 
@@ -686,11 +681,6 @@ function pauseGameFunction() {
                     break;
             }
     }
-
-
-
-
-
 }
 
 pauseGameButton.addEventListener('click', pauseGameFunction);
@@ -739,9 +729,7 @@ function toggleHelp() {
 
             }
             break;
-
     }
-
 }
 
 helpButton.addEventListener('click', toggleHelp);
