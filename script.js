@@ -109,33 +109,33 @@ function mazeGenerator() {
         maze[row][column] = 'E';
     }
 
-        let addExtraSpeed = Math.floor(Math.random() * 4);
-        let addExtraLive = Math.floor(Math.random() * 4);
-        let addGoneWild = Math.floor(Math.random() * 4);
+    let addExtraSpeed = Math.floor(Math.random() * 4);
+    let addExtraLive = Math.floor(Math.random() * 4);
+    let addGoneWild = Math.floor(Math.random() * 4);
 
-        if (addExtraSpeed == 0) {
+    if (addExtraSpeed == 0) {
+        findAValidCell();
+        while (maze[row][column] !== '.') {
             findAValidCell();
-            while (maze[row][column] !== '.') {
-                findAValidCell();
-            }
-            maze[row][column] = 'S';
         }
+        maze[row][column] = 'S';
+    }
 
-        if (addExtraLive == 0) {
+    if (addExtraLive == 0) {
+        findAValidCell();
+        while (maze[row][column] !== '.') {
             findAValidCell();
-            while (maze[row][column] !== '.') {
-                findAValidCell();
-            }
-            maze[row][column] = 'L';
         }
+        maze[row][column] = 'L';
+    }
 
-        if (addGoneWild == 0) {
+    if (addGoneWild == 0) {
+        findAValidCell();
+        while (maze[row][column] !== '.') {
             findAValidCell();
-            while (maze[row][column] !== '.') {
-                findAValidCell();
-            }
-            maze[row][column] = 'W';
         }
+        maze[row][column] = 'W';
+    }
 
 
 
@@ -296,7 +296,7 @@ function animateCharacters(character) {
     let movementDirection = Math.floor(Math.random() * 4);
 
     let iAmUser = false;
-    
+
     if (character.id == 'player') {
         listenForUserInputs();
         iAmUser = true;
@@ -310,7 +310,7 @@ function animateCharacters(character) {
         if (!iAmUser && playerGoneWild) {
             speed = 0.1;
         }
-        
+
 
         if ((iAmUser && rightPressed) || (!iAmUser && movementDirection == 0)) {
             let newRight = characterPosition.right + checkDistance;
@@ -478,7 +478,7 @@ function animateCharacters(character) {
                     characterPosition.right > extraSpeedPosition.left &&
                     characterPosition.top < extraSpeedPosition.bottom &&
                     characterPosition.bottom > extraSpeedPosition.top) {
-                    speed ++;
+                    speed++;
                     extraSpeed.classList.remove('speed-power-up');
                 }
             }
@@ -502,10 +502,11 @@ function animateCharacters(character) {
         }
 
 
-        movementInterval = requestAnimationFrame(animate);
+        character._rafId = requestAnimationFrame(animate);
 
 
     }
+    character._animate = animate;
     animate();
 }
 
@@ -578,10 +579,12 @@ function stopListeningForUserInputs() {
 const start = document.querySelector('.start');
 
 function nextLevel() {
+    helpButton.removeEventListener('click', toggleHelp);
+    pauseGameButton.removeEventListener('click', pauseGameFunction);
     releaseMovement();
     stopListeningForUserInputs();
     for (const character of characters) {
-        cancelAnimationFrame(movementInterval);
+        cancelAnimationFrame(character._rafId);
     }
     start.style.display = 'flex';
     document.querySelector('.start').firstElementChild.nextElementSibling.innerHTML = 'Next Level!';
@@ -609,42 +612,136 @@ function resetGame() {
 }
 
 function endGame() {
+    helpButton.removeEventListener('click', toggleHelp);
+    pauseGameButton.removeEventListener('click', pauseGameFunction);
     releaseMovement();
     stopListeningForUserInputs();
     start.style.display = 'flex';
     document.querySelector('.start').firstElementChild.nextElementSibling.innerHTML = 'Restart Game?';
     start.addEventListener('click', resetGame);
     for (const character of characters) {
-        cancelAnimationFrame(movementInterval);
+        cancelAnimationFrame(character._rafId);
     }
+    gameStarted = false;
 }
 
 function startGame() {
+    pauseGameButton.addEventListener('click', pauseGameFunction);
+    helpButton.addEventListener('click', toggleHelp);
     start.removeEventListener('click', startGame);
     start.style.display = 'none';
     for (const character of characters) {
         animateCharacters(character);
     }
+    gameStarted = true;
 }
 
 start.addEventListener('click', startGame);
 
-let helpMenu = document.querySelector('.help');
+const helpMenu = document.querySelector('.help');
+const helpButton = document.querySelector('.helpButton');
+helpMenu.style.display = 'none';
 
-function hideHelp() {
-    helpButton.removeEventListener('click', hideHelp);
-    helpMenu.style.display = 'none';
-    helpButton.addEventListener('click', displayHelp);
+const pauseGameButton = document.querySelector('.pauseGame');
+let gamePaused = false;
+let gameStarted = false;
+let helpMenuDisplayed = false;
+
+function pauseGameFunction() {
+
+
+    switch (gameStarted) {
+        case false:
+            pauseGameButton.innerHTML = 'Start a Game First!';
+            setTimeout(function () {
+                pauseGameButton.innerHTML = 'Pause';
+            }, 1500);
+            break;
+        default:
+            switch (gamePaused) {
+                case false:
+                    for (const character of characters) {
+                        cancelAnimationFrame(character._rafId);
+                    }
+                    pauseGameButton.innerHTML = 'Resume';
+                    start.style.display = 'flex';
+                    document.querySelector('.start').firstElementChild.nextElementSibling.innerHTML = 'Game Paused! Resume?';
+                    start.addEventListener('click', pauseGameFunction);
+                    gamePaused = true;
+                    break;
+                default:
+                    if (helpMenuDisplayed) {
+                        helpMenuDisplayed = false;
+                        helpMenu.style.display = 'none';
+                    }
+                    for (const character of characters) {
+                        if (character._animate) {
+                            character._animate();
+                        }
+                    }
+                    start.removeEventListener('click', pauseGameFunction);
+                    start.style.display = 'none';
+                    pauseGameButton.innerHTML = 'Pause';
+                    gamePaused = false;
+                    break;
+            }
+    }
+
+
+
+
 
 }
 
-function displayHelp() {
-    helpButton.removeEventListener('click', displayHelp);
-    helpMenu.style.display = 'block';
-    helpButton.addEventListener('click', hideHelp);
+pauseGameButton.addEventListener('click', pauseGameFunction);
+
+function toggleHelp() {
+    switch (gameStarted) {
+        case false:
+            switch (helpMenuDisplayed) {
+                case false:
+                    helpMenuDisplayed = true;
+                    helpMenu.style.display = 'block';
+                    break;
+                default:
+                    helpMenuDisplayed = false;
+                    helpMenu.style.display = 'none';
+                    break;
+            }
+            break;
+        default:
+            switch (gamePaused) {
+                case true:
+                    switch (helpMenuDisplayed) {
+                        case false:
+                            helpMenuDisplayed = true;
+                            helpMenu.style.display = 'block';
+                            break;
+                        default:
+                            helpMenuDisplayed = false;
+                            helpMenu.style.display = 'none';
+                            break;
+                    }
+                    break;
+                default:
+                    switch (helpMenuDisplayed) {
+                        case false:
+                            pauseGameFunction();
+                            helpMenuDisplayed = true;
+                            helpMenu.style.display = 'block';
+                            break;
+                        default:
+                            helpMenuDisplayed = false;
+                            helpMenu.style.display = 'none';
+                            break;
+                    }
+                    break;
+
+            }
+            break;
+
+    }
+
 }
 
-let helpButton = document.querySelector('.helpButton');
-
-
-helpButton.addEventListener('click', displayHelp);
+helpButton.addEventListener('click', toggleHelp);
