@@ -10,99 +10,284 @@ const downScreenButton = document.querySelector('#dbttn');
 
 const main = document.querySelector('main');
 let playerSpeed = 1 // Change players speed
-let enemySpeed = 0.3; // Change enemies speed
+let enemySpeed = 0.4; // Change enemies speed
 let numberOfEnemies = 1; // Change number of enemies
 let probabilityOfMoreEnemies = 2; // Change the probability of more enemies appearing
-let probabilityOfFasterEnemies = 5; // Change the probability of enemies getting faster
+let probabilityOfFasterEnemies = 2; // Change the probability of enemies getting faster
+let randomlyGenerateMaze = false; // Change whether the maze is randomly generated each level or not
+
+const toggleMazeGenerationButton = document.querySelector('.randomlyGenerateMaze');
+
+function toggleRandomMazeGeneration() {
+    if (parseInt(level.innerHTML) > 10) return;
+
+    if (randomlyGenerateMaze) {
+        const userConfirmed = confirm('Is this game unpassable? If so, click OK to reset the game or click Cancel to keep playing this maze.');
+
+        if (userConfirmed) {
+            randomlyGenerateMaze = false;
+            localStorage.setItem('randomlyGenerateMaze', 'false');
+            toggleMazeGenerationButton.style.backgroundColor = '#ccc';
+            endGame();
+        }
+        else {
+            randomlyGenerateMaze = false;
+            localStorage.setItem('randomlyGenerateMaze', 'false');
+            toggleMazeGenerationButton.style.backgroundColor = '#ccc';
+        }
+
+    }
+    else {
+        randomlyGenerateMaze = true;
+        localStorage.setItem('randomlyGenerateMaze', 'true');
+        toggleMazeGenerationButton.style.backgroundColor = '#009249';
+    }
+}
+
+console.log(localStorage.getItem('randomlyGenerateMaze'));
+
+toggleMazeGenerationButton.addEventListener('click', toggleRandomMazeGeneration);
+
+let storedMazeSettings = localStorage.getItem('randomlyGenerateMaze');
+if (storedMazeSettings) {
+    if (storedMazeSettings === 'true') {
+        randomlyGenerateMaze = true;
+        toggleMazeGenerationButton.style.backgroundColor = '#009249';
+    }
+    else if (storedMazeSettings === 'false') {  
+        randomlyGenerateMaze = false;
+    }
+}
+
+
+let score = document.querySelector('.score').firstElementChild.nextElementSibling;
+score.innerHTML = 0;
+let level = document.querySelector('.level').firstElementChild.nextElementSibling;
+level.innerHTML = 1;
 
 function chanceToGetHarderLevel() {
     let doIgetMoreEnemies = Math.floor(Math.random() * probabilityOfMoreEnemies);
     let doIgetFasterEnemies = Math.floor(Math.random() * probabilityOfFasterEnemies);
 
 
-    switch (numberOfEnemies) {
-        case 1:
-            switch (doIgetMoreEnemies) {
-                case 0:
-                    numberOfEnemies++;
-                    probabilityOfMoreEnemies += 5;
-                    break;
-            }
-            break;
-        case 2:
-            switch (doIgetMoreEnemies) {
-                case 0:
-                    numberOfEnemies++;
-                    probabilityOfMoreEnemies += 5;
-                    break;
-            }
-            break;
-        case 3:
-            switch (doIgetMoreEnemies) {
-                case 0:
-                    numberOfEnemies++;
-                    break;
-            }
-            break;
-        case numberOfEnemies > 3:
-            probabilityOfFasterEnemies = 1;
-            break;
+
+    if (numberOfEnemies < 3) {
+        if (doIgetMoreEnemies === 0) {
+            numberOfEnemies++;
+            probabilityOfMoreEnemies += 2;
+        }
+    } else if (numberOfEnemies === 3) {
+        if (doIgetMoreEnemies === 0) {
+            numberOfEnemies++;
+            probabilityOfMoreEnemies += 4;
+        }
+    } else if (numberOfEnemies > 3) {
+        probabilityOfMoreEnemies = 10;
     }
 
-    switch (doIgetFasterEnemies) {
-        case 0:
-            enemySpeed += 0.2;
-            break;
+
+    if (enemySpeed <= 1.0) {
+        if (doIgetFasterEnemies === 0) enemySpeed += 0.2;
+    }
+    else if (enemySpeed > 1.0 && enemySpeed < 2.0) {
+        probabilityOfFasterEnemies = 4;
+        if (doIgetFasterEnemies === 0) enemySpeed += 0.2;
+    }
+    else if (enemySpeed >= 2.0) {
+    probabilityOfFasterEnemies = 10;
+    if (doIgetFasterEnemies === 0 && enemySpeed < 3.0) enemySpeed += 0.2;
     }
 }
 
 function mazeGenerator() {
     // Player = 'P', Wall = '*', Enemy = 'E', Point = ' '
-    /* let maze = [
-        ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*'],
-        ['*', 'P', ' ', '*', ' ', ' ', ' ', ' ', 'E', '*'],
-        ['*', ' ', ' ', ' ', ' ', ' ', ' ', '*', '*', '*'],
-        ['*', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '*'],
-        ['*', ' ', '*', '*', ' ', ' ', ' ', ' ', ' ', '*'],
-        ['*', ' ', ' ', ' ', ' ', ' ', ' ', '*', '*', '*'],
-        ['*', ' ', ' ', '*', ' ', 'E', ' ', ' ', ' ', '*'],
-        ['*', ' ', ' ', ' ', ' ', ' ', ' ', '*', ' ', '*'],
-        ['*', 'E', '*', ' ', ' ', ' ', ' ', ' ', ' ', '*'],
-        ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*']
-    ]; */
-
-
-
-
-    let maze = [
-        ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*'],
-        ['*', 'P', '.', '*', '.', '.', '.', '.', '.', '*'],
-        ['*', '.', '.', '.', '.', '.', '.', '*', '*', '*'],
-        ['*', '.', '.', '.', '.', '.', '.', '.', '.', '*'],
-        ['*', '.', '*', '*', '.', '.', '.', '.', '.', '*'],
-        ['*', '.', '.', '.', '.', '.', '.', '*', '*', '*'],
-        ['*', '.', '.', '*', '.', '.', '.', '.', '.', '*'],
-        ['*', '.', '.', '.', '.', '.', '.', '*', '.', '*'],
-        ['*', '.', '*', '.', '.', '.', '.', '.', '.', '*'],
-        ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*']
-    ];
-
-
+    let maze = [];
 
     let column;
     let row;
-
 
     function findAValidCell() {
         column = Math.ceil(Math.random() * 8);
         row = Math.ceil(Math.random() * 8);
     }
 
+    if (randomlyGenerateMaze) {
+    maze = [
+        ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*'],
+        ['*', 'P', '.', '.', '.', '.', '.', '.', '.', '*'],
+        ['*', '.', '.', '.', '.', '.', '.', '.', '.', '*'],
+        ['*', '.', '.', '.', '.', '.', '.', '.', '.', '*'],
+        ['*', '.', '.', '.', '.', '.', '.', '.', '.', '*'],
+        ['*', '.', '.', '.', '.', '.', '.', '.', '.', '*'],
+        ['*', '.', '.', '.', '.', '.', '.', '.', '.', '*'],
+        ['*', '.', '.', '.', '.', '.', '.', '.', '.', '*'],
+        ['*', '.', '.', '.', '.', '.', '.', '.', '.', '*'],
+        ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*']
+    ];
+
+    let levelNumber = parseInt(level.innerHTML);
+    let minWalls = Math.min(levelNumber * 2, 15);
+    let maxWalls = Math.min(levelNumber * 4, 20);
+    let getSomeWalls = minWalls + Math.floor(Math.random() * (maxWalls - minWalls));
+    for (let i = 0; i < getSomeWalls; i++) {
+        findAValidCell();
+        while (maze[row][column] !== '.') {
+            findAValidCell();
+        }
+        maze[row][column] = '*';
+    }
+}
+
+    else {
+        switch (level.innerHTML) {
+            case '1':
+                maze = [
+                    ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*'],
+                    ['*', 'P', '.', '.', '.', '.', '.', '.', '.', '*'],
+                    ['*', '.', '.', '.', '.', '.', '.', '.', '.', '*'],
+                    ['*', '.', '.', '.', '.', '.', '.', '.', '.', '*'],
+                    ['*', '.', '.', '.', '.', '.', '.', '.', '.', '*'],
+                    ['*', '.', '.', '.', '.', '.', '.', '.', '.', '*'],
+                    ['*', '.', '.', '.', '.', '.', '.', '.', '.', '*'],
+                    ['*', '.', '.', '.', '.', '.', '.', '.', '.', '*'],
+                    ['*', '.', '.', '.', '.', '.', '.', '.', '.', '*'],
+                    ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*']
+                ];
+                break;
+            case '2':
+                maze = [
+                    ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*'],
+                    ['*', 'P', '.', '*', '.', '.', '.', '.', '.', '*'],
+                    ['*', '.', '.', '.', '.', '.', '.', '.', '*', '*'],
+                    ['*', '.', '*', '.', '.', '.', '.', '.', '.', '*'],
+                    ['*', '.', '*', '*', '.', '.', '.', '.', '*', '*'],
+                    ['*', '.', '.', '.', '.', '.', '.', '.', '.', '*'],
+                    ['*', '.', '.', '*', '.', '.', '.', '.', '*', '*'],
+                    ['*', '.', '.', '.', '.', '.', '.', '.', '.', '*'],
+                    ['*', '.', '.', '.', '.', '.', '.', '.', '*', '*'],
+                    ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*']
+                ];
+                break;
+            case '3':
+                maze = [
+                    ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*'],
+                    ['*', 'P', '.', '*', '.', '.', '.', '.', '.', '*'],
+                    ['*', '.', '.', '.', '.', '.', '.', '.', '*', '*'],
+                    ['*', '.', '*', '*', '.', '.', '*', '.', '.', '*'],
+                    ['*', '.', '.', '.', '.', '.', '.', '.', '.', '*'],
+                    ['*', '*', '*', '.', '.', '.', '.', '.', '.', '*'],
+                    ['*', '.', '.', '*', '.', '.', '.', '.', '*', '*'],
+                    ['*', '.', '.', '.', '.', '.', '*', '.', '.', '*'],
+                    ['*', '.', '.', '.', '.', '.', '.', '.', '*', '*'],
+                    ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*']
+                ];
+                break;
+            case '4':
+                maze = [
+                    ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*'],
+                    ['*', 'P', '.', '.', '*', '.', '.', '.', '.', '*'],
+                    ['*', '*', '*', '.', '*', '.', '.', '*', '.', '*'],
+                    ['*', '.', '.', '.', '.', '*', '.', '.', '.', '*'],
+                    ['*', '.', '*', '*', '*', '.', '.', '*', '.', '*'],
+                    ['*', '.', '.', '.', '.', '.', '*', '.', '.', '*'],
+                    ['*', '*', '.', '*', '.', '.', '.', '.', '*', '*'],
+                    ['*', '.', '.', '.', '.', '*', '.', '.', '.', '*'],
+                    ['*', '.', '.', '*', '.', '.', '.', '.', '.', '*'],
+                    ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*']
+                ];
+                break;
+            case '5':
+                maze = [
+                    ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*'],
+                    ['*', 'P', '.', '*', '.', '.', '*', '.', '.', '*'],
+                    ['*', '*', '.', '.', '.', '*', '.', '.', '*', '*'],
+                    ['*', '.', '.', '*', '.', '.', '.', '*', '.', '*'],
+                    ['*', '.', '*', '*', '.', '.', '*', '.', '.', '*'],
+                    ['*', '.', '.', '.', '.', '*', '.', '.', '.', '*'],
+                    ['*', '*', '*', '.', '*', '.', '.', '.', '.', '*'],
+                    ['*', '.', '.', '.', '.', '*', '*', '.', '.', '*'],
+                    ['*', '.', '.', '*', '.', '.', '.', '.', '.', '*'],
+                    ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*']
+                ];
+                break;
+            case '6':
+                maze = [
+                    ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*'],
+                    ['*', 'P', '.', '*', '.', '.', '.', '*', '.', '*'],
+                    ['*', '*', '.', '.', '.', '*', '.', '.', '.', '*'],
+                    ['*', '.', '.', '*', '*', '.', '.', '*', '.', '*'],
+                    ['*', '.', '*', '.', '.', '.', '.', '.', '.', '*'],
+                    ['*', '*', '.', '*', '*', '.', '.', '*', '.', '*'],
+                    ['*', '.', '.', '.', '.', '*', '.', '.', '.', '*'],
+                    ['*', '.', '*', '*', '.', '.', '.', '*', '*', '*'],
+                    ['*', '.', '.', '.', '.', '.', '.', '.', '.', '*'],
+                    ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*']
+                ];
+                break;
+            case '7':
+                maze = [
+                    ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*'],
+                    ['*', 'P', '*', '.', '.', '.', '*', '.', '.', '*'],
+                    ['*', '.', '.', '.', '*', '.', '.', '.', '*', '*'],
+                    ['*', '*', '*', '.', '.', '.', '*', '.', '.', '*'],
+                    ['*', '.', '.', '*', '.', '.', '*', '.', '.', '*'],
+                    ['*', '.', '*', '.', '.', '*', '.', '.', '.', '*'],
+                    ['*', '.', '.', '*', '*', '.', '.', '*', '.', '*'],
+                    ['*', '*', '.', '.', '.', '.', '.', '*', '.', '*'],
+                    ['*', '.', '.', '*', '.', '.', '*', '.', '.', '*'],
+                    ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*']
+                ];
+                break;
+            case '8':
+                maze = [
+                    ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*'],
+                    ['*', 'P', '*', '.', '*', '.', '.', '.', '.', '*'],
+                    ['*', '.', '.', '.', '*', '.', '.', '*', '.', '*'],
+                    ['*', '*', '*', '.', '.', '.', '.', '.', '.', '*'],
+                    ['*', '.', '.', '.', '*', '*', '.', '.', '*', '*'],
+                    ['*', '.', '*', '*', '.', '.', '.', '.', '.', '*'],
+                    ['*', '.', '.', '.', '.', '*', '*', '.', '.', '*'],
+                    ['*', '*', '*', '.', '.', '.', '.', '.', '*', '*'],
+                    ['*', '.', '.', '.', '.', '.', '.', '.', '.', '*'],
+                    ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*']
+                ];
+                break;
+            case '9':
+                maze = [
+                    ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*'],
+                    ['*', 'P', '*', '*', '.', '.', '.', '*', '.', '*'],
+                    ['*', '.', '.', '.', '*', '.', '.', '.', '.', '*'],
+                    ['*', '*', '.', '*', '.', '.', '*', '*', '.', '*'],
+                    ['*', '.', '.', '.', '.', '*', '.', '.', '.', '*'],
+                    ['*', '.', '*', '*', '*', '.', '.', '*', '.', '*'],
+                    ['*', '.', '.', '.', '.', '.', '.', '.', '.', '*'],
+                    ['*', '*', '*', '.', '*', '*', '.', '*', '.', '*'],
+                    ['*', '.', '.', '.', '.', '.', '.', '.', '.', '*'],
+                    ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*']
+                ];
+                break;
+            case '10':
+                maze = [
+                    ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*'],
+                    ['*', 'P', '*', '*', '.', '.', '*', '.', '.', '*'],
+                    ['*', '.', '.', '.', '*', '.', '.', '.', '.', '*'],
+                    ['*', '*', '.', '*', '*', '.', '.', '*', '.', '*'],
+                    ['*', '.', '.', '.', '.', '*', '*', '.', '.', '*'],
+                    ['*', '.', '*', '*', '.', '.', '.', '*', '.', '*'],
+                    ['*', '.', '.', '.', '.', '*', '.', '.', '.', '*'],
+                    ['*', '*', '*', '.', '*', '.', '.', '.', '*', '*'],
+                    ['*', '.', '.', '.', '.', '*', '*', '.', '.', '*'],
+                    ['*', '*', '*', '*', '*', '*', '*', '*', '*', '*']
+                ];
+                break;
+        }
+    }
+
+
+
 
     for (let i = 0; i < numberOfEnemies; i++) {
-
         findAValidCell();
-
         while (maze[row][column] !== '.') {
             findAValidCell();
         }
@@ -110,10 +295,10 @@ function mazeGenerator() {
     }
 
     let addExtraSpeed = Math.floor(Math.random() * 4);
-    let addExtraLive = Math.floor(Math.random() * 4);
+    let addExtraLive = Math.floor(Math.random() * 8);
     let addGoneWild = Math.floor(Math.random() * 4);
 
-    if (addExtraSpeed == 0) {
+    if (addExtraSpeed === 0) {
         findAValidCell();
         while (maze[row][column] !== '.') {
             findAValidCell();
@@ -121,7 +306,7 @@ function mazeGenerator() {
         maze[row][column] = 'S';
     }
 
-    if (addExtraLive == 0) {
+    if (addExtraLive === 0) {
         findAValidCell();
         while (maze[row][column] !== '.') {
             findAValidCell();
@@ -129,7 +314,7 @@ function mazeGenerator() {
         maze[row][column] = 'L';
     }
 
-    if (addGoneWild == 0) {
+    if (addGoneWild === 0) {
         findAValidCell();
         while (maze[row][column] !== '.') {
             findAValidCell();
@@ -241,15 +426,14 @@ function releaseMovement() {
     rightPressed = false;
 }
 
-let score = document.querySelector('.score').firstElementChild.nextElementSibling;
-score.innerHTML = 0;
-let level = document.querySelector('.level').firstElementChild.nextElementSibling;
-level.innerHTML = 1;
+
 
 let player;
 let enemies;
+let characters = [];
 let playerGoneWild = false;
 let playerTemporarilyImmune = false;
+let gameOver = false;
 
 function getCharacters() {
     player = document.querySelector('#player');
@@ -278,16 +462,7 @@ function getSemiRandomDirection(direction) {
 
 
 function animateCharacters(character) {
-
-
     let speed = enemySpeed;
-
-    let characterPosition = character.getBoundingClientRect();
-
-    let characterTop = 0;
-    let characterLeft = 0;
-    let movementDirection = Math.floor(Math.random() * 4);
-
     let iAmUser = false;
 
     if (character.id == 'player') {
@@ -296,6 +471,11 @@ function animateCharacters(character) {
         speed = playerSpeed;
     };
 
+    let characterPosition = character.getBoundingClientRect();
+    let characterTop = 0;
+    let characterLeft = 0;
+    let movementDirection = Math.floor(Math.random() * 4);
+
     function animate() {
         characterPosition = character.getBoundingClientRect();
         let checkDistance = Math.max(speed, 1);
@@ -303,7 +483,6 @@ function animateCharacters(character) {
         if (!iAmUser && playerGoneWild) {
             speed = 0.1;
         }
-
 
         if ((iAmUser && rightPressed) || (!iAmUser && movementDirection == 0)) {
             let newRight = characterPosition.right + checkDistance;
@@ -523,35 +702,113 @@ function removeLive() {
     }
 }
 
-function playerCollidesWithEnemy() {
+let leaderboard = [];
+const gameLeaderboardList = document.querySelector('.leaderboard').firstElementChild.nextElementSibling;
 
+
+function getLeaderboardFromStorage() {
+    gameLeaderboardList.innerHTML = '';
+    let leaders = localStorage.getItem('leaders');
+    if (leaders) {
+        leaderboard = leaders.split(',');
+        for (let leader of leaderboard) {
+            let listItemForLeader = document.createElement('li');
+            let preWrapper = document.createElement('pre');
+            let name = leader.split('_')[0];
+            let score = leader.split('_')[1];
+            // The below idea with padEnd is from here: https://stackoverflow.com/questions/5876118/how-to-pad-a-string-to-get-a-determined-length-in-javascript
+            let listItemText = document.createTextNode(name.padEnd(16) + score);
+            preWrapper.appendChild(listItemText);
+            listItemForLeader.appendChild(preWrapper);
+            gameLeaderboardList.appendChild(listItemForLeader);
+        }
+    }
+}
+getLeaderboardFromStorage();
+
+function writeLeaderboardToStorage(name, score) {
+    let leaderInLeaderboard = false;
+
+    for (let leader of leaderboard) {
+        if (!leaderInLeaderboard) {
+            if (leader.split('_')[0] == name) {
+                leaderInLeaderboard = true;
+                if (score > parseInt(leader.split('_')[1])) {
+                    let index = leaderboard.indexOf(leader);
+                    leaderboard[index] = leader.split('_')[0] + '_' + score;
+                }
+                else {
+                    alert('Leaderboard not updated — your score was the same or lower this game.');
+                    return;
+                }
+            }
+        }
+    }
+
+    if (!leaderInLeaderboard) {
+        let potentialLeader = name + '_' + score;
+        leaderboard.push(potentialLeader);
+    }
+
+    leaderboard.sort((a, b) => {
+        let scoreA = parseInt(a.split('_')[1]);
+        let scoreB = parseInt(b.split('_')[1]);
+        return scoreB - scoreA;
+    });
+
+    if (leaderboard.length > 12) { leaderboard.pop(); }
+
+    localStorage.setItem('leaders', leaderboard);
+    getLeaderboardFromStorage();
+}
+
+function askForName(score) {
+    let playerName = prompt('Please enter your name:');
+
+    if (!playerName) {
+        alert('Please input a name!')
+        askForName(score);
+    }
+
+    else if (playerName.length > 14) {
+        alert("Please input a name or nickname that's under 15 characters long!")
+        askForName(score);
+    }
+
+    else if (leaderboard.some(l => l.split('_')[0] === playerName)) {
+        let check = confirm('Name already exists, update the score?')
+        if (!check) { askForName(score); return; }
+        writeLeaderboardToStorage(playerName, score);
+    }
+
+    else {
+        writeLeaderboardToStorage(playerName, score);
+    }
+}
+
+
+console.log(leaderboard);
+
+
+function playerCollidesWithEnemy() {
+    if (playerTemporarilyImmune || gameOver) return;
     releaseMovement();
     stopListeningForUserInputs();
-
 
     if (lives > 1) {
         removeLive();
         player.classList = 'hit';
         playerTemporarilyImmune = true;
         setTimeout(listenForUserInputs, 1500);
-        setTimeout(function () {playerTemporarilyImmune = false;}, 1500);
+        setTimeout(function () { playerTemporarilyImmune = false; }, 1500);
         return;
-    }
-
-    else {
+    } else {
+        gameOver = true;
         removeLive();
         player.classList = 'dead';
         setTimeout(endGame, 1500);
     }
-
-    return;
 }
-
-function playerEatsEnemy(enemy) {
-    enemy.classList.remove('enemy');
-    score.innerHTML = parseInt(score.innerHTML) + 5;
-}
-
 
 function listenForUserInputs() {
     document.addEventListener('keydown', keyDown);
@@ -584,6 +841,10 @@ function nextLevel() {
     start.style.display = 'flex';
     document.querySelector('.start').firstElementChild.nextElementSibling.innerHTML = 'Next Level!';
     level.innerHTML++;
+    if (parseInt(level.innerHTML) > 10 && !randomlyGenerateMaze) {
+    randomlyGenerateMaze = true;
+    toggleMazeGenerationButton.style.backgroundColor = '#009249';
+}
     main.innerHTML = '';
     chanceToGetHarderLevel();
     mazeGenerator();
@@ -594,7 +855,12 @@ function nextLevel() {
 }
 
 function resetGame() {
+    start.removeEventListener('click', resetGame);
     main.innerHTML = '';
+    numberOfEnemies = 1;
+    probabilityOfMoreEnemies = 2;
+    probabilityOfFasterEnemies = 2;
+    enemySpeed = 0.3;
     mazeGenerator();
     getCharacters();
     playerSpeed = 1;
@@ -607,17 +873,21 @@ function resetGame() {
 }
 
 function endGame() {
-    helpButton.removeEventListener('click', toggleHelp);
-    pauseGameButton.removeEventListener('click', pauseGameFunction);
+    if (score.innerHTML > 0) { askForName(score.innerHTML); }
+    for (let i = lives; i > 0; i--) {
+        removeLive();
+    }
+    gameStarted = false;
+    gameOver = false;
     releaseMovement();
     stopListeningForUserInputs();
     start.style.display = 'flex';
-    document.querySelector('.start').firstElementChild.nextElementSibling.innerHTML = 'Restart Game?';
+    document.querySelector('.start').firstElementChild.nextElementSibling.innerHTML = 'Game Over! Restart Game?';
     start.addEventListener('click', resetGame);
     for (const character of characters) {
         cancelAnimationFrame(character._rafId);
     }
-    gameStarted = false;
+
 }
 
 function startGame() {
@@ -643,8 +913,6 @@ let gameStarted = false;
 let helpMenuDisplayed = false;
 
 function pauseGameFunction() {
-
-
     switch (gameStarted) {
         case false:
             pauseGameButton.innerHTML = 'Start a Game First!';
@@ -680,6 +948,7 @@ function pauseGameFunction() {
                     gamePaused = false;
                     break;
             }
+            break;
     }
 }
 
@@ -733,3 +1002,4 @@ function toggleHelp() {
 }
 
 helpButton.addEventListener('click', toggleHelp);
+
